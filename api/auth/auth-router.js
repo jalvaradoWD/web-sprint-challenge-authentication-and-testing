@@ -33,6 +33,7 @@ router.post('/register', async (req, res) => {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
+    console.table({ username, hashedPassword });
     const result = await db('users')
       .insert({ username, password: hashedPassword }, [
         'id',
