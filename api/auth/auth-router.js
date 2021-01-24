@@ -1,5 +1,8 @@
+require('dotenv').config();
 const router = require('express').Router();
 const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
+
 const db = require('../../data/dbConfig');
 const checkFields = require('../middleware/auth.middleware');
 
@@ -50,8 +53,7 @@ router.post('/register', checkFields, async (req, res) => {
   }
 });
 
-router.post('/login', (req, res) => {
-  res.end('implement login, please!');
+router.post('/login', checkFields, async (req, res) => {
   /*
     IMPLEMENT
     You are welcome to build additional middlewares to help with the endpoint's functionality.
@@ -75,6 +77,25 @@ router.post('/login', (req, res) => {
     4- On FAILED login due to `username` not existing in the db, or `password` being incorrect,
       the response body should include a string exactly as follows: "invalid credentials".
   */
+  try {
+    const { username, password: hashedPassword } = req.user;
+    const { password } = req.body;
+
+    const matchedPassword = await bcrypt.compare(password, hashedPassword);
+
+    if (!matchedPassword) {
+      throw res.status(400).json({ message: 'Invalid credentials' });
+    }
+
+    const token = jwt.sign(req.user, process.env.JWT_SECRET);
+
+    return res.json({
+      message: `Welcome, ${username}`,
+      token,
+    });
+  } catch (error) {
+    return error;
+  }
 });
 
 module.exports = router;

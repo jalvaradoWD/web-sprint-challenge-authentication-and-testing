@@ -47,11 +47,13 @@ const checkIfUsernameTaken = async (req, res) => {
 const checkIfUsernameExist = async (req, res) => {
   const { username } = req.body;
 
-  const foundUser = await db('auth').where({ username });
+  const foundUser = await db('users').where({ username }).first();
 
-  if (foundUser) {
+  if (!foundUser) {
     throw res.status(400).json({ messge: 'Username does not exist.' });
   }
+
+  req.user = foundUser;
 };
 
 module.exports = checkFields;
