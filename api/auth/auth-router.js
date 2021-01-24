@@ -2,6 +2,7 @@ require('dotenv').config();
 const router = require('express').Router();
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const knex = require('../../data/dbConfig');
 
 const db = require('../../data/dbConfig');
 const checkFields = require('../middleware/auth.middleware');
@@ -78,16 +79,19 @@ router.post('/login', checkFields, async (req, res) => {
       the response body should include a string exactly as follows: "invalid credentials".
   */
   try {
-    const { username, password: hashedPassword } = req.user;
-    const { password } = req.body;
+    const { username, password } = req.body;
+    const foundUser = await knex('users')
+      .select('*')
+      .where({ username })
+      .first();
 
-    const matchedPassword = await bcrypt.compare(password, hashedPassword);
+    const matchedPassword = await bcrypt.compare(password, foundUser.password);
 
     if (!matchedPassword) {
       throw res.status(400).json({ message: 'Invalid credentials' });
     }
 
-    const token = jwt.sign(req.user, process.env.JWT_SECRET);
+    const token = jwt.sign(foundUser, process.env.JWT_SECRET);
 
     return res.json({
       message: `Welcome, ${username}`,

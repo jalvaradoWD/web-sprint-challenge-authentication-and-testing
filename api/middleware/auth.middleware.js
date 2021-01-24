@@ -52,8 +52,6 @@ const checkIfUsernameExist = async (req, res) => {
   if (!foundUser) {
     throw res.status(400).json({ messge: 'Username does not exist.' });
   }
-
-  req.user = foundUser;
 };
 
 module.exports = checkFields;

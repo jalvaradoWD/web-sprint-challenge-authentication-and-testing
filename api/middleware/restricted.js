@@ -1,4 +1,22 @@
+require('dotenv').config();
+const jwt = require('jsonwebtoken');
+
 module.exports = (req, res, next) => {
+  try {
+    const token = req.headers.authorization;
+    const verfiedToken = jwt.verify(token, process.env.JWT_SECRET);
+
+    if (!token) {
+      throw res.status(400).json({ message: 'token required' });
+    }
+
+    if (!verfiedToken) {
+      throw res.status(400).json({ messge: 'token invalid' });
+    }
+  } catch (error) {
+    return error;
+  }
+
   next();
   /*
     IMPLEMENT
