@@ -1,8 +1,9 @@
 const router = require('express').Router();
 const bcrypt = require('bcrypt');
 const db = require('../../data/dbConfig');
+const checkFields = require('../middleware/auth.middleware');
 
-router.post('/register', async (req, res) => {
+router.post('/register', checkFields, async (req, res) => {
   /*
     IMPLEMENT
     You are welcome to build additional middlewares to help with the endpoint's functionality.
@@ -34,19 +35,16 @@ router.post('/register', async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, 10);
 
     console.table({ username, hashedPassword });
-    const result = await db('users')
-      .insert({ username, password: hashedPassword }, [
-        'id',
-        'username',
-        'password',
-      ])
-      .catch((error) => {
-        throw res
-          .status(400)
-          .json({ message: 'Fa1iled to create user', error });
-      });
+    const result = await db('users').insert({
+      username,
+      password: hashedPassword,
+    });
 
-    return res.json(result);
+    return res.json({
+      id: result[0],
+      username,
+      password: hashedPassword,
+    });
   } catch (error) {
     return error;
   }
